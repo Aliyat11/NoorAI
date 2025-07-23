@@ -15,11 +15,11 @@ How it works:
 
 Key technologies:
 
-OpenAI GPT (GPT-3.5-turbo): Natural language understanding
-SpeechRecognition & gTTS: Voice input and spoken replies
-Flask + Python: Backend logic and API handling
-HTML/CSS/JS frontend: User interface for interaction
-Dotenv: Secure environment variable management
+- OpenAI GPT (GPT-3.5-turbo): Natural language understanding
+- SpeechRecognition & gTTS: Voice input and spoken replies
+- Flask + Python: Backend logic and API handling
+- HTML/CSS/JS frontend: User interface for interaction
+- Dotenv: Secure environment variable management
 
 The problem it solves:
 
