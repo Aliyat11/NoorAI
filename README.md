@@ -1,7 +1,5 @@
 # NoorAI
-Noor AI is a voice-enabled college assistant designed to help students with studying, CV tips, and academic support in a conversational way.
-
-Noor AI is a voice-enabled virtual college assistant built to support university students with their academic journey.
+Noor AI is a voice-enabled college assistant designed to support students with studying, CV tips, and academic journey in a conversational way.
 
 It helps with:
 
@@ -24,4 +22,5 @@ HTML/CSS/JS frontend: User interface for interaction
 Dotenv: Secure environment variable management
 
 The problem it solves:
+
 Many students lack accessible academic support for tasks like CV writing, studying effectively, or preparing for interviews. Noor AI fills this gap by acting as an on-demand, voice-based college companion,bringing clarity, encouragement, and structure to everyday student life.
