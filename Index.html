@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Noor AI</title>
+  <style>
+    body {
+      background-color: #121212;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      color: white;
+    }
+
+    .banner {
+      color: #d8b4fe;
+      padding: 1rem;
+      text-align: center;
+      font-size: 4.0rem;
+      font-weight: bold;
+      text-shadow: 0 0 12px #c084fc;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pulse-circle {
+      width: 150px;
+      height: 150px;
+      background: radial-gradient(circle, #a855f7, #7e22ce);
+      border-radius: 50%;
+      transition: transform 0.5s ease-in-out;
+      box-shadow: 0 0 20px #c084fc, 0 0 30px #c084fc inset;
+    }
+
+    .pulse {
+      transform: scale(1.15);
+    }
+
+    .dialogue {
+      margin-top: 2rem;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    .dialogue p {
+      margin: 0.5rem 0;
+      font-size: 1rem;
+    }
+
+    .dialogue strong {
+      color: #d8b4fe;
+      text-shadow: 0 0 6px #c084fc;
+    }
+
+    .input-bar {
+      display: flex;
+      border-top: 1px solid #333;
+      padding: 1rem;
+      gap: 0.5rem;
+      background: #1e1e1e;
+    }
+
+    .input-bar input {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid #555;
+      border-radius: 6px;
+      background: #222;
+      color: white;
+    }
+
+    .input-bar button {
+      padding: 0.5rem 1rem;
+      background: #9333ea;
+      border: none;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 0 12px #c084fc, 0 0 16px #c084fc inset;
+    }
+
+    .input-bar button:hover {
+      background: #7e22ce;
+    }
+
+    .mic-button {
+      background: #d8b4fe;
+      border: none;
+      border-radius: 50%;
+      padding: 0.6rem;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: #7e22ce;
+      box-shadow: 0 0 10px #c084fc, 0 0 12px #c084fc inset;
+    }
+
+    .mic-button:hover {
+      background: #c084fc;
+    }
+
+    #listening-indicator {
+     color: #c084fc;
+     font-size: 1rem;
+     font-weight: bold;
+     margin-top: 1rem;
+     display: none;
+   }
+
+  </style>
+</head>
+<body>
+
+  <div class="banner">Noor AI</div>
+
+  <div class="content">
+    <div id="circle" class="pulse-circle"></div>
+    <div id="listening-indicator">Listening...</div>
+    <div class="dialogue">
+      <p><strong>You:</strong> <span id="user-text"></span></p>
+      <p><strong>Noor:</strong> <span id="ai-text"></span></p>
+    </div>
+  </div>
+
+  <div class="input-bar">
+    <input type="text" id="question" placeholder="Ask Noor AI anything..." />
+    <button onclick="askNoor()">Ask</button>
+    <button class="mic-button" onclick="startListening()">🎤</button>
+  </div>
+
+  <script>
+    const circle = document.getElementById("circle");
+    const userText = document.getElementById("user-text");
+    const aiText = document.getElementById("ai-text");
+    const input = document.getElementById("question");
+    const listeningIndicator = document.getElementById("listening-indicator");
+
+    function speak(text) {
+      const msg = new SpeechSynthesisUtterance(text);
+      const voices = window.speechSynthesis.getVoices();
+      msg.voice = voices.find(v => v.name === "Microsoft Aria Online (Natural) - English (United States)");
+      msg.lang = "en-UK";
+
+      msg.onstart = () => circle.classList.add("pulse");
+      msg.onend = () => circle.classList.remove("pulse");
+
+      window.speechSynthesis.speak(msg);
+    }
+
+    function typeOutText(element, text) {
+      element.textContent = "";
+      let i = 0;
+
+      speak(text);
+
+      function type() {
+        if (i < text.length) {
+          element.textContent += text.charAt(i);
+          i++;
+          setTimeout(type, 30);
+        }
+      }
+      type();
+    }
+
+    async function askNoor() {
+      const question = input.value.trim();
+      if (!question) return;
+
+      userText.textContent = question;
+      aiText.textContent = "thinking...";
+      input.value = "";
+      listeningIndicator.style.display = "none";
+
+      const res = await fetch("http://127.0.0.1:5000/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: question })
+      });
+
+      const data = await res.json();
+      typeOutText(aiText, data.response);
+    }
+
+    function startListening() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+
+      listeningIndicator.style.display = "block";
+
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        input.value = transcript;
+        askNoor();
+      };
+
+      recognition.onerror = function(event) {
+        alert("Speech recognition error: " + event.error);
+        listeningIndicator.style.display = "none";
+      };
+
+      recognition.onend = function() {
+        listeningIndicator.style.display = "none";
+      };
+
+      recognition.start();
+    }
+
+window.onload = () => {
+      const welcome = "Hi, I'm Noor A.I., your personal college companion. How can I support you today?";
+      let hasSpoken = false;
+
+      function speakWelcomeOnce() {
+        if (!hasSpoken) {
+          hasSpoken = true;
+          typeOutText(aiText, welcome);
+        }
+      }
+
+      if (speechSynthesis.getVoices().length > 0) {
+        speakWelcomeOnce();
+      } else {
+        speechSynthesis.onvoiceschanged = speakWelcomeOnce;
+      }
+    };
+  </script>
+</body>
+</html>
